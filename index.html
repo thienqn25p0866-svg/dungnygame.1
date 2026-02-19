@@ -1,34 +1,30 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Arrow Rhythm</title>
+<title>Dũng Ny Rhythm</title>
 
 <style>
 body{
-    background:#e6e6e6;
+    background:#0b1220;
     font-family:Arial;
     display:flex;
     flex-direction:column;
     align-items:center;
     margin:0;
+    color:white;
 }
 
-/* ===== KHUNG ===== */
-#container{
-    display:flex;
-    gap:40px;
-    margin-top:20px;
-}
-
-/* GAME */
+/* ===== GAME ===== */
 #game{
     position:relative;
     width:320px;
     height:600px;
-    background:#ddd;
-    border:4px solid black;
+    background:#111827;
+    border:5px solid #06b6d4;
     overflow:hidden;
+    margin-top:20px;
 }
 
 /* 4 cột */
@@ -36,20 +32,19 @@ body{
     position:absolute;
     width:25%;
     height:100%;
-    border-left:3px solid black;
+    border-left:2px solid #1f2937;
 }
-.lane:nth-child(1){left:0%;}
 .lane:nth-child(2){left:25%;}
 .lane:nth-child(3){left:50%;}
 .lane:nth-child(4){left:75%;}
 
-/* vùng xanh */
+/* vùng hit */
 #hitZone{
     position:absolute;
     bottom:0;
     width:100%;
     height:120px;
-    background:#6cf06c;
+    background:linear-gradient(#22c55e,#16a34a);
 }
 
 /* ô rơi */
@@ -58,6 +53,8 @@ body{
     width:25%;
     height:70px;
     background:white;
+    color:black;
+    border-radius:12px;
     border:3px solid black;
     display:flex;
     align-items:center;
@@ -66,211 +63,312 @@ body{
     font-size:22px;
 }
 
-/* bảng điểm */
+/* panel */
 #panel{
+    margin-top:15px;
     display:flex;
-    flex-direction:column;
-    gap:15px;
+    gap:20px;
 }
-
 .box{
-    width:200px;
-    height:110px;
-    border:4px solid black;
-    border-radius:25px;
-    background:white;
+    width:150px;
+    height:70px;
+    border-radius:18px;
+    background:#1f2937;
     display:flex;
     justify-content:center;
     align-items:center;
-    font-size:24px;
-    font-weight:bold;
+    font-size:22px;
+    border:2px solid #06b6d4;
 }
 
-/* ===== NÚT DƯỚI CỘT ===== */
+/* controls */
 #controls{
     width:320px;
     display:flex;
 }
-
 .controlBtn{
     width:25%;
     height:90px;
-    background:white;
-    border:3px solid black;
+    background:#1f2937;
+    border:2px solid #334155;
     font-size:30px;
     display:flex;
     justify-content:center;
     align-items:center;
     user-select:none;
 }
+.controlBtn:active{background:#475569;}
 
-.controlBtn:active{
-    background:#bbb;
+/* popup nhập tên */
+#namePopup{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+backdrop-filter:blur(8px);
+background:rgba(0,0,0,0.6);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:10;
+}
+#namePopup .box{
+background:#020617;
+padding:30px;
+border-radius:20px;
+text-align:center;
+}
+#namePopup input{
+padding:10px;
+border-radius:10px;
+border:none;
+margin-top:15px;
+}
+#namePopup button{
+margin-top:15px;
+padding:10px 20px;
+border:none;
+border-radius:10px;
+background:#22c55e;
+font-weight:bold;
+}
+
+/* leaderboard */
+#leaderboardScreen{
+display:none;
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:#020617;
+z-index:9;
+text-align:center;
+padding-top:40px;
+}
+.rank{
+padding:6px;
+font-size:20px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="container">
+<h1>Dũng Ny Rhythm</h1>
 
-    <div>
-        <div id="game">
-            <div id="hitZone"></div>
-            <div class="lane"></div>
-            <div class="lane"></div>
-            <div class="lane"></div>
-            <div class="lane"></div>
-        </div>
-
-        <!-- NÚT NGAY DƯỚI CỘT -->
-        <div id="controls">
-            <div class="controlBtn" data-key="ArrowLeft">←</div>
-            <div class="controlBtn" data-key="ArrowUp">↑</div>
-            <div class="controlBtn" data-key="ArrowDown">↓</div>
-            <div class="controlBtn" data-key="ArrowRight">→</div>
-        </div>
-    </div>
-
-    <div id="panel">
-        <div id="scoreBox" class="box">ĐIỂM: 0</div>
-        <div id="highScore" class="box">KỶ LỤC: 0</div>
-    </div>
-
+<div id="game">
+<div id="hitZone"></div>
+<div class="lane"></div>
+<div class="lane"></div>
+<div class="lane"></div>
+<div class="lane"></div>
 </div>
 
+<div id="controls">
+<div class="controlBtn" data-lane="0">←</div>
+<div class="controlBtn" data-lane="1">↑</div>
+<div class="controlBtn" data-lane="2">↓</div>
+<div class="controlBtn" data-lane="3">→</div>
+</div>
+
+<div id="panel">
+<div id="scoreBox" class="box">Điểm: 0</div>
+<div id="highScore" class="box">Kỷ lục: 0</div>
+</div>
+
+<!-- Popup nhập tên -->
+<div id="namePopup">
+<div class="box">
+<h2>Vui lòng nhập tên của bạn cho Dũng Ny biết..</h2>
+<input id="playerNameInput" placeholder="Tên của bạn">
+<br>
+<button onclick="saveName()">Bắt đầu</button>
+</div>
+</div>
+
+<!-- Leaderboard -->
+<div id="leaderboardScreen">
+<h1>BẠN ĐÃ THUA</h1>
+<h2 id="yourScore"></h2>
+<h2>🏆 TOP 10 NGƯỜI CHƠI</h2>
+<div id="leaderboardList"></div>
+<button onclick="location.reload()">Chơi lại</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <script>
+const firebaseConfig={
+apiKey:"AIzaSyDczjKA_fSiNItMn8WTdvAC_eeMjOJjIm8",
+authDomain:"dungnygame.firebaseapp.com",
+databaseURL:"https://dungnygame-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"dungnygame",
+storageBucket:"dungnygame.firebasestorage.app",
+messagingSenderId:"826944055019",
+appId:"1:826944055019:web:2f1ff304015fcf544f00ae"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
 
+/* ===== GAME VARIABLES ===== */
 const game=document.getElementById("game");
-const scoreBox=document.getElementById("scoreBox");
-const highScoreBox=document.getElementById("highScore");
-
-/* kỷ lục */
-let highScore=localStorage.getItem("arrowHighScore")||0;
-highScoreBox.innerText="KỶ LỤC: "+highScore;
-
 let notes=[];
 let score=0;
 let speed=2.8;
+let spawnTime=1500;
+let spawner=null;
+let gameRunning=false;
 
-/* chữ */
+/* high score */
+let highScore=localStorage.getItem("arrowHighScore")||0;
+document.getElementById("highScore").innerText="Kỷ lục: "+highScore;
+
+/* chữ tuần tự */
 const words=["dũng","yêu","sa","ny"];
 let wordIndex=0;
 
-let spawnTime=1500;
-let spawner;
+/* ===== NAME ===== */
+let playerName=localStorage.getItem("playerName");
+
+if(playerName){
+document.getElementById("namePopup").style.display="none";
+startGame();
+}
+
+/* lưu tên */
+function saveName(){
+let name=document.getElementById("playerNameInput").value.trim();
+if(name.length<2){alert("Tên quá ngắn!");return;}
+localStorage.setItem("playerName",name);
+playerName=name;
+document.getElementById("namePopup").style.display="none";
+startGame();
+}
+
+/* ===== START GAME ===== */
+function startGame(){
+if(gameRunning)return;
+gameRunning=true;
+spawner=setInterval(spawnNote,spawnTime);
+}
 
 /* spawn */
 function spawnNote(){
-    let lane=Math.floor(Math.random()*4);
-
-    let note=document.createElement("div");
-    note.classList.add("note");
-
-    note.style.left=(lane*25)+"%";
-    note.style.top="-80px";
-    note.innerText=words[wordIndex];
-    wordIndex=(wordIndex+1)%words.length;
-
-    game.appendChild(note);
-
-    notes.push({
-        element:note,
-        lane:lane,
-        y:-80
-    });
+if(!gameRunning)return;
+let lane=Math.floor(Math.random()*4);
+let note=document.createElement("div");
+note.className="note";
+note.style.left=(lane*25)+"%";
+note.style.top="-80px";
+note.innerText=words[wordIndex];
+wordIndex=(wordIndex+1)%words.length;
+game.appendChild(note);
+notes.push({element:note,lane:lane,y:-80});
 }
 
-/* loop */
+/* update loop (chạy nền luôn) */
 function update(){
+if(gameRunning){
+for(let i=0;i<notes.length;i++){
+let n=notes[i];
+n.y+=speed;
+n.element.style.top=n.y+"px";
+if(n.y>600){gameOver();return;}
+}
+}
+requestAnimationFrame(update);
+}
+update();
 
-    for(let i=0;i<notes.length;i++){
+/* hit */
+function tryHit(lane){
+let zoneTop=480; // 25% vùng xanh vẫn tính
+for(let i=0;i<notes.length;i++){
+let n=notes[i];
+if(n.lane===lane && n.y+70>=zoneTop){
+n.element.remove();
+notes.splice(i,1);
+score++;
+document.getElementById("scoreBox").innerText="Điểm: "+score;
 
-        let n=notes[i];
-        n.y+=speed;
-        n.element.style.top=n.y+"px";
-
-        /* TRÔI QUA VÙNG XANH -> THUA */
-        if(n.y>600){
-            gameOver();
-            return;
-        }
-    }
-    requestAnimationFrame(update);
+/* kỷ lục cá nhân */
+if(score>highScore){
+highScore=score;
+localStorage.setItem("arrowHighScore",highScore);
+document.getElementById("highScore").innerText="Kỷ lục: "+highScore;
 }
 
-/* ===== HIT CHỈ KHI CHẠM VÙNG XANH ===== */
-function tryHit(lanePressed){
-
-    let zoneTop=600-120; // đầu vùng xanh
-    let zoneBottom=600;
-
-    for(let i=0;i<notes.length;i++){
-
-        let n=notes[i];
-
-        if(n.lane===lanePressed && n.y+70>=zoneTop && n.y<=zoneBottom){
-
-            n.element.remove();
-            notes.splice(i,1);
-
-            score++;
-            scoreBox.innerText="ĐIỂM: "+score;
-
-            updateDifficulty();
-            return true;
-        }
-    }
-    return false;
+/* tăng tốc */
+if(score%10===0){
+spawnTime-=100;
+if(spawnTime<750)spawnTime=750;
+clearInterval(spawner);
+spawner=setInterval(spawnNote,spawnTime);
+}
+return true;
+}
+}
+return false;
 }
 
 /* keyboard */
-document.addEventListener("keydown",(e)=>{
-    const map={
-        ArrowLeft:0,
-        ArrowUp:1,
-        ArrowDown:2,
-        ArrowRight:3
-    };
-    if(!(e.key in map)) return;
-
-    if(!tryHit(map[e.key])) gameOver();
+document.addEventListener("keydown",e=>{
+const map={ArrowLeft:0,ArrowUp:1,ArrowDown:2,ArrowRight:3};
+if(e.key in map){
+if(!tryHit(map[e.key]))gameOver();
+}
 });
 
 /* mobile */
 document.querySelectorAll(".controlBtn").forEach(btn=>{
-    btn.addEventListener("touchstart",()=>{
-        const map={
-            ArrowLeft:0,
-            ArrowUp:1,
-            ArrowDown:2,
-            ArrowRight:3
-        };
-        if(!tryHit(map[btn.dataset.key])) gameOver();
-    });
+btn.addEventListener("touchstart",()=>{
+let lane=Number(btn.dataset.lane);
+if(!tryHit(lane))gameOver();
 });
-
-/* tăng độ khó */
-function updateDifficulty(){
-    if(score%10===0){
-        spawnTime-=100;
-        if(spawnTime<750) spawnTime=750;
-        clearInterval(spawner);
-        spawner=setInterval(spawnNote,spawnTime);
-    }
-}
+});
 
 /* game over */
 function gameOver(){
-    saveScore(score);
+if(!gameRunning)return;
+gameRunning=false;
+clearInterval(spawner);
+uploadScore(score);
+setTimeout(showLeaderboard,500);
 }
 
+/* upload score */
+function uploadScore(s){
+if(!playerName)return;
+db.ref("leaderboard").push({
+name:playerName,
+score:s,
+time:Date.now()
+});
+}
 
-/* start */
-spawner=setInterval(spawnNote,spawnTime);
-update();
+/* leaderboard realtime */
+function showLeaderboard(){
+document.getElementById("leaderboardScreen").style.display="block";
+document.getElementById("yourScore").innerText="Điểm của bạn: "+score;
 
+db.ref("leaderboard")
+.orderByChild("score")
+.limitToLast(10)
+.on("value",snap=>{
+let arr=[];
+snap.forEach(c=>arr.push(c.val()));
+arr.sort((a,b)=>b.score-a.score);
+
+let html="";
+arr.forEach((p,i)=>{
+html+=`<div class="rank">${i+1}. ${p.name} — ${p.score}</div>`;
+});
+
+document.getElementById("leaderboardList").innerHTML=html;
+});
+}
 </script>
+
 </body>
 </html>
-
+```
