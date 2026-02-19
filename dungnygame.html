@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Arrow Rhythm</title>
+
+<style>
+body{
+    background:#e6e6e6;
+    font-family:Arial;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin:0;
+}
+
+/* ===== KHUNG ===== */
+#container{
+    display:flex;
+    gap:40px;
+    margin-top:20px;
+}
+
+/* GAME */
+#game{
+    position:relative;
+    width:320px;
+    height:600px;
+    background:#ddd;
+    border:4px solid black;
+    overflow:hidden;
+}
+
+/* 4 cột */
+.lane{
+    position:absolute;
+    width:25%;
+    height:100%;
+    border-left:3px solid black;
+}
+.lane:nth-child(1){left:0%;}
+.lane:nth-child(2){left:25%;}
+.lane:nth-child(3){left:50%;}
+.lane:nth-child(4){left:75%;}
+
+/* vùng xanh */
+#hitZone{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:120px;
+    background:#6cf06c;
+}
+
+/* ô rơi */
+.note{
+    position:absolute;
+    width:25%;
+    height:70px;
+    background:white;
+    border:3px solid black;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:22px;
+}
+
+/* bảng điểm */
+#panel{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.box{
+    width:200px;
+    height:110px;
+    border:4px solid black;
+    border-radius:25px;
+    background:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:24px;
+    font-weight:bold;
+}
+
+/* ===== NÚT DƯỚI CỘT ===== */
+#controls{
+    width:320px;
+    display:flex;
+}
+
+.controlBtn{
+    width:25%;
+    height:90px;
+    background:white;
+    border:3px solid black;
+    font-size:30px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    user-select:none;
+}
+
+.controlBtn:active{
+    background:#bbb;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+    <div>
+        <div id="game">
+            <div id="hitZone"></div>
+            <div class="lane"></div>
+            <div class="lane"></div>
+            <div class="lane"></div>
+            <div class="lane"></div>
+        </div>
+
+        <!-- NÚT NGAY DƯỚI CỘT -->
+        <div id="controls">
+            <div class="controlBtn" data-key="ArrowLeft">←</div>
+            <div class="controlBtn" data-key="ArrowUp">↑</div>
+            <div class="controlBtn" data-key="ArrowDown">↓</div>
+            <div class="controlBtn" data-key="ArrowRight">→</div>
+        </div>
+    </div>
+
+    <div id="panel">
+        <div id="scoreBox" class="box">ĐIỂM: 0</div>
+        <div id="highScore" class="box">KỶ LỤC: 0</div>
+    </div>
+
+</div>
+
+<script>
+
+const game=document.getElementById("game");
+const scoreBox=document.getElementById("scoreBox");
+const highScoreBox=document.getElementById("highScore");
+
+/* kỷ lục */
+let highScore=localStorage.getItem("arrowHighScore")||0;
+highScoreBox.innerText="KỶ LỤC: "+highScore;
+
+let notes=[];
+let score=0;
+let speed=2.8;
+
+/* chữ */
+const words=["dũng","yêu","sa","ny"];
+let wordIndex=0;
+
+let spawnTime=1500;
+let spawner;
+
+/* spawn */
+function spawnNote(){
+    let lane=Math.floor(Math.random()*4);
+
+    let note=document.createElement("div");
+    note.classList.add("note");
+
+    note.style.left=(lane*25)+"%";
+    note.style.top="-80px";
+    note.innerText=words[wordIndex];
+    wordIndex=(wordIndex+1)%words.length;
+
+    game.appendChild(note);
+
+    notes.push({
+        element:note,
+        lane:lane,
+        y:-80
+    });
+}
+
+/* loop */
+function update(){
+
+    for(let i=0;i<notes.length;i++){
+
+        let n=notes[i];
+        n.y+=speed;
+        n.element.style.top=n.y+"px";
+
+        /* TRÔI QUA VÙNG XANH -> THUA */
+        if(n.y>600){
+            gameOver();
+            return;
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+/* ===== HIT CHỈ KHI CHẠM VÙNG XANH ===== */
+function tryHit(lanePressed){
+
+    let zoneTop=600-120; // đầu vùng xanh
+    let zoneBottom=600;
+
+    for(let i=0;i<notes.length;i++){
+
+        let n=notes[i];
+
+        if(n.lane===lanePressed && n.y+70>=zoneTop && n.y<=zoneBottom){
+
+            n.element.remove();
+            notes.splice(i,1);
+
+            score++;
+            scoreBox.innerText="ĐIỂM: "+score;
+
+            updateDifficulty();
+            return true;
+        }
+    }
+    return false;
+}
+
+/* keyboard */
+document.addEventListener("keydown",(e)=>{
+    const map={
+        ArrowLeft:0,
+        ArrowUp:1,
+        ArrowDown:2,
+        ArrowRight:3
+    };
+    if(!(e.key in map)) return;
+
+    if(!tryHit(map[e.key])) gameOver();
+});
+
+/* mobile */
+document.querySelectorAll(".controlBtn").forEach(btn=>{
+    btn.addEventListener("touchstart",()=>{
+        const map={
+            ArrowLeft:0,
+            ArrowUp:1,
+            ArrowDown:2,
+            ArrowRight:3
+        };
+        if(!tryHit(map[btn.dataset.key])) gameOver();
+    });
+});
+
+/* tăng độ khó */
+function updateDifficulty(){
+    if(score%10===0){
+        spawnTime-=100;
+        if(spawnTime<750) spawnTime=750;
+        clearInterval(spawner);
+        spawner=setInterval(spawnNote,spawnTime);
+    }
+}
+
+/* game over */
+function gameOver(){
+    saveScore(score);
+}
+
+
+/* start */
+spawner=setInterval(spawnNote,spawnTime);
+update();
+
+</script>
+</body>
+</html>
